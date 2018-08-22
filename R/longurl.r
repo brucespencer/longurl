@@ -32,27 +32,27 @@ expand_urls <- function(urls_to_expand,
 
   if (.progress) pb <- progress_estimated(length(urls_to_expand))
 
-  urls_to_expand <- as.character(urls_to_expand)
+    urls_to_expand <- as.character(urls_to_expand)
 
-  purrr::map_df(urls_to_expand, function(x) {
+    all.triples = sapply(urls_to_expand, function(x) {
 
-    if (.progress) pb$tick()$print()
+        if (.progress) pb$tick()$print()
 
-    res <- s_HEAD(x, httr::user_agent(agent), httr::timeout(seconds))
+        res <- s_HEAD(x, httr::user_agent(agent), httr::timeout(seconds))
 
-    if (is.null(res$result)) {
-      warning(sprintf("Invalid URL: [%s]", x))
-      data_frame(orig_url = x, expanded_url = NA, status_code = NA)
-    } else {
-      sres <- s_STATUS(res$result)
-      if (is.null(sres$result)) {
-        warning("httr::warn_for_status() on HEAD request result")
-        data_frame(orig_url = x, expanded_url = NA, status_code = NA)
-      } else {
-        data_frame(orig_url = x, expanded_url = res$result$url, status_code = res$result$status_code)
-      }
-    }
-
-  })
-
+        if (is.null(res$result)) {
+            warning(sprintf("Invalid URL: [%s]", x))
+            NULL
+        } else {
+            sres <- s_STATUS(res$result)
+            if (is.null(sres$result)) {
+                warning("httr::warn_for_status() on HEAD request result")
+                list(orig_url = x, expanded_url = NA, status_code = NA)
+            } else {
+                list(orig_url = x, expanded_url = res$result$url, status_code = res$result$status_code)
+            }
+        }
+    })
+    rbindlist(all.triples)
 }
+
