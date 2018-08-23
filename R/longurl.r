@@ -34,7 +34,7 @@ expand_urls <- function(urls_to_expand,
 
     urls_to_expand <- as.character(urls_to_expand)
 
-    all.triples = sapply(urls_to_expand, function(x) {
+    all.triples = lapply(urls_to_expand, function(x) {
 
         if (.progress) pb$tick()$print()
 
@@ -53,6 +53,7 @@ expand_urls <- function(urls_to_expand,
             }
         }
     })
+
     rbindlist(all.triples)
 }
 
