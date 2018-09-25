@@ -9,12 +9,13 @@ s_STATUS <- purrr::safely(httr::warn_for_status)
 #' @md
 #' @param urls_to_expand character vector of URLs
 #' @param warn show any warnings (API or otherwise) as messages
+#' @param check.status after expanding, check the status of  the resulting URL
 #' @param agent user agent to use (some sites switchup content based on user agents).
 #'        Defaults to "`longurl-r-package`".
 #' @param seconds number of seconds to wait for a response until giving up. Cannot be <1ms.
 #' @param .progress display a progress bar (generally only useful in
 #'        interactive sesions)
-#' @return a tibble/data frame with the orignial URLs in `orig_url`, expanded URLs in
+#' @return a data.table with the orignial URLs in `orig_url`, expanded URLs in
 #'        `expanded_url` and the HTTP `status_code` of the expanded URL. Completely
 #'        invalid URLs result in a `NA` value for `expanded_url` & `status_code`.
 #' @export
@@ -24,8 +25,10 @@ s_STATUS <- purrr::safely(httr::warn_for_status)
 #'                "ift.tt/1L2Llfr")
 #' big_urls <- expand_urls(test_urls)
 #' head(big_urls)
+
 expand_urls <- function(urls_to_expand,
                         warn = TRUE,
+                        check.status = TRUE,
                         agent = "longurl-r-package",
                         seconds = 5,
                         .progress = interactive()) {
@@ -43,6 +46,8 @@ expand_urls <- function(urls_to_expand,
         if (is.null(res$result)) {
             warning(sprintf("Invalid URL: [%s]", x))
             NULL
+        } else if (!check.status) {
+            list(orig_url = x, expanded_url = res$result$url)
         } else {
             sres <- s_STATUS(res$result)
             if (is.null(sres$result)) {
